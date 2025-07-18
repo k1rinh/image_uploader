@@ -20,19 +20,7 @@ function initializeEventListeners() {
     uploadArea.addEventListener('dragleave', handleDragLeave);
     uploadArea.addEventListener('drop', handleDrop);
 
-    // 优化的点击处理 - 防止双击问题
-    uploadArea.addEventListener('click', (e) => {
-        // 如果点击的是文件输入框本身，不要触发额外的click
-        if (e.target === fileInput) {
-            return;
-        }
-
-        // 只在点击空白区域时才触发文件选择
-        e.preventDefault();
-        fileInput.click();
-    });
-
-    // 文件选择处理
+    // 文件选择处理 - 由于文件输入框覆盖整个uploadArea，点击任何地方都会触发文件选择
     fileInput.addEventListener('change', handleFileInputChange);
 
     // 粘贴图片处理
