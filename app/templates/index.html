@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图片上传器</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+    <div class="container">
+        <h1>图片上传器</h1>
+
+        <div class="upload-area" id="uploadArea">
+            <p>拖拽图片到这里或点击选择文件</p>
+            <p class="paste-hint">💡 提示：您也可以直接粘贴图片（Ctrl+V 或 Cmd+V）</p>
+            <input type="file" id="fileInput" accept="image/*" multiple="false">
+        </div>
+
+        <div class="file-info" id="fileInfo">
+            <h3>文件信息</h3>
+            <p><strong>文件名:</strong> <span id="fileName"></span></p>
+            <p><strong>文件大小:</strong> <span id="fileSize"></span> MB</p>
+            <p><strong>建议压缩:</strong> <span id="compressionSuggestion"></span></p>
+        </div>
+
+        <div class="compression-options" id="compressionOptions">
+            <h3>压缩选项</h3>
+            <label for="enableCompression">
+                <input type="checkbox" id="enableCompression"> 启用压缩
+            </label>
+            <div id="compressionControls" style="display: none; margin-top: 15px;">
+                <label for="qualitySlider">压缩质量: <span id="qualityValue">80</span>%</label>
+                <input type="range" id="qualitySlider" class="compression-slider" min="10" max="95" value="80">
+                <p>预估压缩后大小: <span id="estimatedSize">计算中...</span></p>
+            </div>
+        </div>
+
+        <div class="buttons">
+            <button id="uploadBtn" disabled>上传图片</button>
+            <button id="resetBtn">重置</button>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>正在处理，请稍候...</p>
+        </div>
+
+        <div class="result" id="result"></div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+
+</html>
