@@ -265,7 +265,7 @@ function showSuccess(data) {
             </ul>
             <p><strong>图片URL:</strong></p>
             <div class="url-box" id="imageUrl">${data.image_url}</div>
-            <button class="copy-btn" onclick="copyToClipboard('${data.image_url}')">复制链接</button>
+            <p class="copy-hint">💡 请手动选择并复制上面的链接</p>
         </div>
     `;
     result.innerHTML = html;
@@ -304,23 +304,6 @@ function showLoading() {
 // 隐藏加载状态
 function hideLoading() {
     loading.style.display = 'none';
-}
-
-// 复制到剪贴板
-function copyToClipboard(text) {
-    navigator.clipboard.writeText(text).then(() => {
-        alert('链接已复制到剪贴板！');
-    }).catch(err => {
-        console.error('复制失败:', err);
-        // 回退方案
-        const textArea = document.createElement('textarea');
-        textArea.value = text;
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
-        alert('链接已复制到剪贴板！');
-    });
 }
 
 // 页面加载完成后初始化

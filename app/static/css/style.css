@@ -135,16 +135,15 @@ button:disabled {
     margin: 10px 0;
     word-break: break-all;
     font-family: monospace;
+    user-select: all;
+    /* 方便用户选择文本 */
 }
 
-.copy-btn {
-    background-color: #28a745;
+.copy-hint {
+    color: #666;
     font-size: 14px;
-    padding: 5px 10px;
-}
-
-.copy-btn:hover {
-    background-color: #218838;
+    font-style: italic;
+    margin-top: 5px;
 }
 
 .loading {
