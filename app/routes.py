@@ -14,6 +14,7 @@ from .utils import (
     compress_image,
     get_content_type,
     upload_to_r2,
+    delete_from_r2,
     generate_file_path,
     generate_image_url
 )
@@ -98,4 +99,28 @@ def upload_file():
         
     except Exception as e:
         print(f"上传处理失败: {e}")
+        return jsonify({'error': f'服务器内部错误: {str(e)}'}), 500
+
+
+@main_bp.route('/delete', methods=['POST'])
+def delete_file():
+    """删除上传的文件"""
+    try:
+        data = request.get_json()
+        if not data or 'storage_path' not in data:
+            return jsonify({'error': '缺少必需参数: storage_path'}), 400
+        
+        storage_path = data['storage_path']
+        
+        # 从R2删除文件
+        if delete_from_r2(storage_path):
+            return jsonify({
+                'success': True,
+                'message': '文件删除成功'
+            })
+        else:
+            return jsonify({'error': '删除文件失败，请稍后重试'}), 500
+            
+    except Exception as e:
+        print(f"删除文件失败: {e}")
         return jsonify({'error': f'服务器内部错误: {str(e)}'}), 500

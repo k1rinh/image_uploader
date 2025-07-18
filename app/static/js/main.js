@@ -282,6 +282,11 @@ function showSuccess(data) {
             </div>
             
             <p class="copy-hint">💡 请手动选择并复制需要的格式</p>
+            
+            <div class="delete-section">
+                <button class="delete-btn" onclick="deleteImage('${data.storage_path}')">删除图片</button>
+                <p class="delete-hint">⚠️ 删除后无法恢复</p>
+            </div>
         </div>
     `;
     result.innerHTML = html;
@@ -320,6 +325,56 @@ function showLoading() {
 // 隐藏加载状态
 function hideLoading() {
     loading.style.display = 'none';
+}
+
+// 删除图片
+async function deleteImage(storagePath) {
+    if (!confirm('确定要删除这张图片吗？删除后无法恢复！')) {
+        return;
+    }
+
+    try {
+        showLoading();
+
+        const response = await fetch('/delete', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                storage_path: storagePath
+            })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            showDeleteSuccess();
+        } else {
+            showError(data.error || '删除失败');
+        }
+    } catch (error) {
+        showError('网络错误：' + error.message);
+    } finally {
+        hideLoading();
+    }
+}
+
+// 显示删除成功
+function showDeleteSuccess() {
+    // 显示删除成功提示
+    result.innerHTML = `
+        <div class="success">
+            <h3>删除成功！</h3>
+            <p>图片已从服务器删除，页面即将重置...</p>
+        </div>
+    `;
+    result.style.display = 'block';
+
+    // 1.0秒后自动重置表单
+    setTimeout(() => {
+        resetForm();
+    }, 1000);
 }
 
 // 页面加载完成后初始化

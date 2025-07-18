@@ -14,6 +14,7 @@ from .image_utils import (
 
 from .storage_utils import (
     upload_to_r2,
+    delete_from_r2,
     generate_file_path,
     generate_image_url
 )
@@ -25,6 +26,7 @@ __all__ = [
     'compress_image',
     'get_content_type',
     'upload_to_r2',
+    'delete_from_r2',
     'generate_file_path',
     'generate_image_url'
 ]

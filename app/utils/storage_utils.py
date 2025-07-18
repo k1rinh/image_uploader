@@ -45,6 +45,23 @@ def upload_to_r2(file_data: bytes, file_name: str, content_type: str) -> bool:
         return False
 
 
+def delete_from_r2(file_name: str) -> bool:
+    """从Cloudflare R2存储删除文件"""
+    try:
+        r2_client = get_r2_client()
+        if not r2_client:
+            return False
+        
+        r2_client.delete_object(
+            Bucket=R2_CONFIG['bucket_name'],
+            Key=file_name
+        )
+        return True
+    except Exception as e:
+        current_app.logger.error(f"从R2删除文件失败: {e}")
+        return False
+
+
 def generate_file_path(md5_hash: str, extension: str) -> str:
     """生成文件存储路径"""
     now = datetime.datetime.now()
