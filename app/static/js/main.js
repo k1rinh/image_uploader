@@ -263,9 +263,25 @@ function showSuccess(data) {
                 <li>MD5哈希: ${data.md5_hash}</li>
                 <li>存储路径: ${data.storage_path}</li>
             </ul>
-            <p><strong>图片URL:</strong></p>
-            <div class="url-box" id="imageUrl">${data.image_url}</div>
-            <p class="copy-hint">💡 请手动选择并复制上面的链接</p>
+            
+            <p><strong>链接格式:</strong></p>
+            
+            <div class="format-section">
+                <p><strong>URL:</strong></p>
+                <div class="url-box">${data.image_url}</div>
+            </div>
+            
+            <div class="format-section">
+                <p><strong>Markdown:</strong></p>
+                <div class="url-box">![](${data.image_url})</div>
+            </div>
+            
+            <div class="format-section">
+                <p><strong>HTML:</strong></p>
+                <div class="url-box">&lt;img src="${data.image_url}"/&gt;</div>
+            </div>
+            
+            <p class="copy-hint">💡 请手动选择并复制需要的格式</p>
         </div>
     `;
     result.innerHTML = html;

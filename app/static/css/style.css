@@ -139,6 +139,15 @@ button:disabled {
     /* 方便用户选择文本 */
 }
 
+.format-section {
+    margin: 15px 0;
+}
+
+.format-section p {
+    margin: 5px 0;
+    font-weight: bold;
+}
+
 .copy-hint {
     color: #666;
     font-size: 14px;
