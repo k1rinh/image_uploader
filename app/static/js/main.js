@@ -19,7 +19,18 @@ function initializeEventListeners() {
     uploadArea.addEventListener('dragover', handleDragOver);
     uploadArea.addEventListener('dragleave', handleDragLeave);
     uploadArea.addEventListener('drop', handleDrop);
-    uploadArea.addEventListener('click', () => fileInput.click());
+
+    // 优化的点击处理 - 防止双击问题
+    uploadArea.addEventListener('click', (e) => {
+        // 如果点击的是文件输入框本身，不要触发额外的click
+        if (e.target === fileInput) {
+            return;
+        }
+
+        // 只在点击空白区域时才触发文件选择
+        e.preventDefault();
+        fileInput.click();
+    });
 
     // 文件选择处理
     fileInput.addEventListener('change', handleFileInputChange);
@@ -59,8 +70,14 @@ function handleDrop(e) {
 }
 
 function handleFileInputChange(e) {
+    console.log('文件输入变化事件触发'); // 调试日志
+
     if (e.target.files.length > 0) {
-        handleFileSelect(e.target.files[0]);
+        const file = e.target.files[0];
+        console.log('选择的文件:', file.name, file.size, file.type); // 调试日志
+        handleFileSelect(file);
+    } else {
+        console.log('没有选择文件'); // 调试日志
     }
 }
 

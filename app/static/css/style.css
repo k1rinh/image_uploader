@@ -29,6 +29,7 @@ h1 {
     margin-bottom: 20px;
     transition: border-color 0.3s;
     cursor: pointer;
+    position: relative;
 }
 
 .upload-area:hover {
@@ -43,6 +44,18 @@ h1 {
 .upload-area.paste-ready {
     border-color: #28a745;
     background-color: #f0fff0;
+}
+
+/* 文件输入框样式 - 防止双击问题 */
+.file-input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 1;
 }
 
 input[type="file"] {
