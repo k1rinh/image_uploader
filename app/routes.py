@@ -4,6 +4,7 @@
 主要路由模块
 """
 
+import gc
 from flask import Blueprint, request, jsonify, render_template
 from werkzeug.utils import secure_filename
 
@@ -18,6 +19,7 @@ from .utils import (
     generate_file_path,
     generate_image_url
 )
+from .config import MAX_FILE_SIZE_MB
 
 main_bp = Blueprint('main', __name__)
 
@@ -31,6 +33,9 @@ def index():
 @main_bp.route('/upload', methods=['POST'])
 def upload_file():
     """处理文件上传"""
+    file_data = None
+    final_data = None
+    
     try:
         # 检查是否有文件
         if 'file' not in request.files:
@@ -48,6 +53,10 @@ def upload_file():
         file_data = file.read()
         original_size_mb = get_file_size_mb(file_data)
         
+        # 检查文件大小限制
+        if original_size_mb > MAX_FILE_SIZE_MB:
+            return jsonify({'error': f'文件太大，最大支持{MAX_FILE_SIZE_MB}MB'}), 400
+        
         # 获取文件扩展名
         filename = secure_filename(file.filename)
         file_extension = filename.rsplit('.', 1)[1].lower()
@@ -56,18 +65,22 @@ def upload_file():
         compress = request.form.get('compress', '').lower() == 'true'
         quality = int(request.form.get('quality', 80))
         
-        final_data = file_data
-        
         if compress:
-            # 压缩图片
+            # 压缩图片 - 压缩后立即释放原始数据
             try:
-                # 确定压缩格式
                 compress_format = 'JPEG' if file_extension in ['jpg', 'jpeg'] else 'PNG'
                 final_data = compress_image(file_data, quality, compress_format)
+                # 立即释放原始文件数据内存
+                del file_data
+                file_data = None
                 print(f"图片压缩完成，质量: {quality}%")
             except Exception as e:
                 print(f"图片压缩失败: {e}")
                 return jsonify({'error': f'图片压缩失败: {str(e)}'}), 500
+        else:
+            # 不压缩时直接使用原始数据
+            final_data = file_data
+            file_data = None  # 避免重复引用
         
         final_size_mb = get_file_size_mb(final_data)
         
@@ -79,7 +92,13 @@ def upload_file():
         
         # 上传到R2
         content_type = get_content_type(file_extension)
-        if not upload_to_r2(final_data, storage_path, content_type):
+        upload_success = upload_to_r2(final_data, storage_path, content_type)
+        
+        # 上传完成后立即释放内存
+        del final_data
+        final_data = None
+        
+        if not upload_success:
             return jsonify({'error': '上传到云存储失败，请检查配置'}), 500
         
         # 生成最终URL
@@ -100,6 +119,14 @@ def upload_file():
     except Exception as e:
         print(f"上传处理失败: {e}")
         return jsonify({'error': f'服务器内部错误: {str(e)}'}), 500
+    finally:
+        # 确保内存清理
+        if 'file_data' in locals() and file_data is not None:
+            del file_data
+        if 'final_data' in locals() and final_data is not None:
+            del final_data
+        # 强制垃圾回收
+        gc.collect()
 
 
 @main_bp.route('/delete', methods=['POST'])

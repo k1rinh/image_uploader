@@ -1,7 +1,6 @@
 // 图片上传器主要JavaScript逻辑
 
 let selectedFile = null;
-let originalFileData = null;
 
 // DOM元素引用
 const uploadArea = document.getElementById('uploadArea');
@@ -118,25 +117,34 @@ function handleKeyDown(e) {
 // 质量滑块变化处理
 function handleQualityChange(e) {
     document.getElementById('qualityValue').textContent = e.target.value;
-    if (originalFileData) {
+    // 移除实时压缩预估以节省内存和CPU
+    if (selectedFile) {
         estimateCompressedSize();
     }
 }
 
 // 处理文件选择
 function handleFileSelect(file) {
+    // 先清理之前的文件引用
+    if (selectedFile) {
+        selectedFile = null;
+    }
+    
     selectedFile = file;
 
     // 验证文件类型
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
     if (!allowedTypes.includes(file.type)) {
         showError('不支持的文件类型。请选择 JPEG、PNG、GIF 或 WebP 格式的图片。');
+        selectedFile = null;
         return;
     }
 
     // 验证文件大小（最大16MB）
-    if (file.size > 16 * 1024 * 1024) {
+    const maxSizeBytes = 16 * 1024 * 1024;
+    if (file.size > maxSizeBytes) {
         showError('文件太大，最大支持16MB。');
+        selectedFile = null;
         return;
     }
 
@@ -165,15 +173,10 @@ function handleFileSelect(file) {
     compressionOptions.style.display = 'block';
     uploadBtn.disabled = false;
 
-    // 读取文件数据用于预估
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        originalFileData = e.target.result;
-        if (enableCompressionCheckbox.checked) {
-            estimateCompressedSize();
-        }
-    };
-    reader.readAsArrayBuffer(file);
+    // 立即估算压缩大小（基于文件大小，不读取文件内容）
+    if (enableCompressionCheckbox.checked) {
+        estimateCompressedSize();
+    }
 }
 
 // 压缩控制切换
@@ -182,7 +185,7 @@ function toggleCompressionControls() {
     const controls = document.getElementById('compressionControls');
     controls.style.display = checkbox.checked ? 'block' : 'none';
 
-    if (checkbox.checked && originalFileData) {
+    if (checkbox.checked && selectedFile) {
         estimateCompressedSize();
     }
 }
@@ -239,8 +242,11 @@ async function uploadImage() {
 
 // 重置表单
 function resetForm() {
-    selectedFile = null;
-    originalFileData = null;
+    // 清理文件引用以释放内存
+    if (selectedFile) {
+        selectedFile = null;
+    }
+    
     fileInput.value = '';
     fileInfo.style.display = 'none';
     compressionOptions.style.display = 'none';
@@ -249,6 +255,11 @@ function resetForm() {
     document.getElementById('compressionControls').style.display = 'none';
     hideResult();
     hideLoading();
+    
+    // 强制垃圾回收（在支持的浏览器中）
+    if (window.gc && typeof window.gc === 'function') {
+        window.gc();
+    }
 }
 
 // 显示成功结果

@@ -31,9 +31,15 @@ def calculate_md5(file_data: bytes) -> str:
 
 def compress_image(image_data: bytes, quality: int = 80, format: str = 'JPEG') -> bytes:
     """压缩图片并返回压缩后的字节数据"""
+    img = None
+    background = None
+    output = None
+    input_stream = None
+    
     try:
         # 将字节数据转换为PIL图像对象
-        img = Image.open(io.BytesIO(image_data))
+        input_stream = io.BytesIO(image_data)
+        img = Image.open(input_stream)
         
         # 如果是PNG格式且有透明度，转换为RGBA模式
         if img.mode in ('RGBA', 'LA') or (img.mode == 'P' and 'transparency' in img.info):
@@ -43,22 +49,37 @@ def compress_image(image_data: bytes, quality: int = 80, format: str = 'JPEG') -
                 if img.mode == 'P':
                     img = img.convert('RGBA')
                 background.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
+                # 立即释放原图内存
+                img.close()
                 img = background
+                background = None
         else:
             # 确保图像为RGB模式（JPEG需要）
             if img.mode != 'RGB' and format.upper() == 'JPEG':
-                img = img.convert('RGB')
+                rgb_img = img.convert('RGB')
+                img.close()
+                img = rgb_img
         
         # 压缩图像
         output = io.BytesIO()
         img.save(output, format=format, quality=quality, optimize=True)
         compressed_data = output.getvalue()
-        output.close()
         
         return compressed_data
+        
     except Exception as e:
         current_app.logger.error(f"图片压缩失败: {e}")
         raise
+    finally:
+        # 确保释放所有资源
+        if img is not None:
+            img.close()
+        if background is not None:
+            background.close()
+        if output is not None:
+            output.close()
+        if input_stream is not None:
+            input_stream.close()
 
 
 def get_content_type(extension: str) -> str:

@@ -9,6 +9,10 @@ import os
 # 支持的文件扩展名
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 
+# 文件大小限制（MB）
+MAX_FILE_SIZE_MB = 16
+MAX_MEMORY_USAGE_MB = 64  # 单个请求最大内存使用
+
 # 自定义域名
 CUSTOM_DOMAIN = 'static.k1r.in'
 
