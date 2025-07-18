@@ -1,29 +1,52 @@
 # 部署指南
 
+## 获取 Cloudflare R2 配置
+
+#### 创建 R2 存储桶
+
+1. 登录 [Cloudflare Dashboard](https://dash.cloudflare.com/)
+2. 选择您的账户
+3. 导航到 R2 Object Storage
+4. 点击 "Create bucket"
+5. 输入存储桶名称
+6. 选择区域（推荐选择离用户最近的区域）
+7. 点击 "Create bucket"
+
+#### 获取 API 凭证
+
+1. 在 R2 页面，点击右侧的 "Manage R2 API tokens"
+2. 点击 "Create API token"
+3. 配置权限：
+   - **Token name**: 输入描述性名称（如：image-uploader-token）
+   - **Permissions**: 选择 "Object Read & Write"
+   - **Resources**: 选择 "Apply to specific buckets only"，然后选择您创建的存储桶
+4. 点击 "Create API token"
+5. 复制显示的凭证信息：
+   - Access Key ID
+   - Secret Access Key
+   - Token value (这个是给 CLI 使用的，Web 应用不需要)
+
 ## 本地开发环境设置
 
 ### 1. 安装依赖
 
 ```bash
-# 使用uv（推荐）
+# 使用 uv（推荐）
 uv sync
-
-# 或者使用pip
-pip install flask pillow boto3 python-dotenv werkzeug
 ```
 
 ### 2. 配置环境变量
 
-创建`.env`文件：
+创建 `.env` 文件：
 
 ```bash
 cp .env.example .env
 ```
 
-编辑`.env`文件，填入您的Cloudflare R2配置：
+编辑 `.env` 文件，填入您的 Cloudflare R2 配置：
 
 ```env
-# Cloudflare R2配置
+# Cloudflare R2 配置
 R2_ENDPOINT=https://your-account-id.r2.cloudflarestorage.com
 R2_ACCESS_KEY_ID=your_access_key_id
 R2_SECRET_ACCESS_KEY=your_secret_access_key
@@ -34,53 +57,23 @@ FLASK_ENV=development
 FLASK_DEBUG=True
 ```
 
-### 3. 获取Cloudflare R2配置
-
-#### 创建R2存储桶
-
-1. 登录 [Cloudflare Dashboard](https://dash.cloudflare.com/)
-2. 选择您的账户
-3. 导航到 R2 Object Storage
-4. 点击 "Create bucket"
-5. 输入存储桶名称
-6. 选择区域（推荐选择离用户最近的区域）
-7. 点击 "Create bucket"
-
-#### 获取API凭证
-
-1. 在R2页面，点击右侧的 "Manage R2 API tokens"
-2. 点击 "Create API token"
-3. 配置权限：
-   - **Token name**: 输入描述性名称（如：image-uploader-token）
-   - **Permissions**: 选择 "Object Read & Write"
-   - **Resources**: 选择 "Apply to specific buckets only"，然后选择您创建的存储桶
-4. 点击 "Create API token"
-5. 复制显示的凭证信息：
-   - Access Key ID
-   - Secret Access Key
-   - Token value (这个是给CLI使用的，Web应用不需要)
-
-#### 获取账户ID和端点
-
-1. 在R2概览页面，您可以找到：
-   - **Account ID**: 在页面右侧显示
-   - **Endpoint**: 格式为 `https://<account-id>.r2.cloudflarestorage.com`
-
-### 4. 测试配置
+### 3. 测试配置
 
 运行测试脚本验证核心功能：
 
 ```bash
-python test_core.py
+# cd image_uploader
+uv run test_core.py
 ```
 
-### 5. 启动应用
+### 4. 启动应用
 
 ```bash
-python main.py
+# cd image_uploader
+uv run main.py
 ```
 
-应用将在 `http://localhost:5000` 启动。
+应用将在 `http://localhost:5005` 启动。
 
 ## 生产环境部署
 
@@ -92,85 +85,49 @@ python main.py
 # 更新系统
 sudo apt update && sudo apt upgrade -y
 
-# 安装Python和依赖
-sudo apt install python3 python3-pip python3-venv nginx -y
-
-# 创建应用目录
-sudo mkdir -p /var/www/image-uploader
-cd /var/www/image-uploader
+# 安装 uv
+# https://docs.astral.sh/uv/getting-started/installation/
 ```
 
 #### 2. 部署应用
 
 ```bash
 # 克隆代码
-git clone <your-repo-url> .
-
-# 创建虚拟环境
-python3 -m venv venv
-source venv/bin/activate
+git clone https://github.com/k1rinh/image_uploader.git .
+cd image_uploader
 
 # 安装依赖
-pip install -r requirements.txt
-
-# 或者如果使用pyproject.toml
-pip install -e .
+uv sync
 ```
 
 #### 3. 配置环境变量
 
 ```bash
-# 创建生产环境配置
-sudo nano .env
-
-# 添加内容（使用您的实际配置）
-R2_ENDPOINT=https://your-account-id.r2.cloudflarestorage.com
-R2_ACCESS_KEY_ID=your_access_key_id
-R2_SECRET_ACCESS_KEY=your_secret_access_key
-R2_BUCKET_NAME=your_bucket_name
-FLASK_ENV=production
+cp .env.example .env
+# 编辑 .env 文件，填入您的 Cloudflare R2 配置
 ```
 
-#### 4. 配置Gunicorn
-
-创建Gunicorn配置文件：
+#### 4. 创建 systemd 服务
 
 ```bash
-sudo nano gunicorn.conf.py
-```
-
-内容：
-
-```python
-bind = "127.0.0.1:5000"
-workers = 2
-worker_class = "sync"
-timeout = 120
-keepalive = 5
-max_requests = 1000
-max_requests_jitter = 100
-```
-
-#### 5. 创建systemd服务
-
-```bash
-sudo nano /etc/systemd/system/image-uploader.service
+sudo vim /etc/systemd/system/image-uploader.service
 ```
 
 内容：
 
 ```ini
+# 假设用户为 admin，工作目录为 /path/to/image_uploader
 [Unit]
 Description=Image Uploader Flask App
 After=network.target
 
 [Service]
-User=www-data
-Group=www-data
-WorkingDirectory=/var/www/image-uploader
-Environment="PATH=/var/www/image-uploader/venv/bin"
-ExecStart=/var/www/image-uploader/venv/bin/gunicorn -c gunicorn.conf.py main:app
+ExecStart=/home/admin/.local/bin/uv run run.py
+WorkingDirectory=/path/to/image_uploader
+User=admin
+Group=admin
 Restart=always
+RestartSec=5
 
 [Install]
 WantedBy=multi-user.target
@@ -184,6 +141,9 @@ sudo systemctl enable image-uploader
 sudo systemctl start image-uploader
 sudo systemctl status image-uploader
 ```
+
+> [!WARNING]
+> 以下内容我没有进行验证，请在有背景知识的情况下操作。
 
 #### 6. 配置Nginx
 

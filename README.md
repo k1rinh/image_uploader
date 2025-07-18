@@ -52,9 +52,6 @@ image_uploader/
 ```bash
 # 使用 uv（推荐）
 uv sync
-
-# 或者使用 pip
-pip install -e .
 ```
 
 ### 2. 配置环境变量
@@ -67,12 +64,7 @@ cp .env.example .env
 ### 3. 运行应用
 
 ```bash
-# 使用新的入口文件
-python run.py
-
-# 或者激活虚拟环境后运行
-source .venv/bin/activate
-python run.py
+uv run run.py
 ```
 
 访问 `http://localhost:5005` 使用应用程序。
