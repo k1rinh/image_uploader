@@ -36,13 +36,20 @@ image_uploader/
 │       │   └── style.css           # 样式文件
 │       └── js/
 │           └── main.js             # JavaScript 逻辑
+├── docs/                           # 项目文档
+│   ├── API.md                      # API 接口文档
+│   └── DEPLOYMENT.md               # 部署指南
+├── .github/                        # GitHub 配置
+│   └── copilot-instructions.md     # Copilot 指令文件
 ├── pyproject.toml                  # 项目依赖配置
+├── uv.lock                         # UV 依赖锁定文件
 ├── .env.example                    # 环境变量模板
 ├── .env                            # 环境变量配置（本地）
 ├── .gitignore                      # Git 忽略文件
+├── .python-version                 # Python 版本指定
 ├── README.md                       # 项目说明
-├── DEPLOYMENT.md                   # 部署指南
-└── test_core.py                    # 核心功能测试
+├── test_core.py                    # 核心功能测试
+└── wrangler.toml                   # Cloudflare Workers 配置
 ```
 
 ## 🚀 快速开始
@@ -84,6 +91,8 @@ uv run run.py
 6. 获取最终的图片链接
 
 ### API 接口
+
+详细的API文档请参考 [API.md](./docs/API.md)
 
 #### 上传图片
 
@@ -167,7 +176,7 @@ python test_core.py
 
 ## 📦 部署
 
-详细的部署指南请参考 [DEPLOYMENT.md](./DEPLOYMENT.md)
+详细的部署指南请参考 [DEPLOYMENT.md](./docs/DEPLOYMENT.md)
 
 支持多种部署方式：
 
